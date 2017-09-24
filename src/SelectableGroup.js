@@ -103,6 +103,7 @@ class SelectableGroup extends Component {
       selectable: {
         register: this.registerSelectable,
         unregister: this.unregisterSelectable,
+        selectWithNodes: this.selectWithNodes,
         selectAll: this.selectAll,
         clearSelection: this.clearSelection,
         getScrolledContainer: () => this.scrollContainer,
@@ -357,6 +358,33 @@ class SelectableGroup extends Component {
     this.setState({ selectionMode: false })
     this.props.onSelectionFinish([...this.selectedItems])
     this.props.onSelectionClear()
+  }
+
+  selectWithNodes = (nodes) => {
+    this.updateWhiteListNodes()
+    // remove any previous
+    for (const item of this.selectedItems.values()) {
+      item.setState({ selected: false })
+      this.selectedItems.delete(item)
+    }
+
+    for (const item of this.registry.values()) {
+
+      const inList = nodes.some( node =>{
+        if( node === item.node)
+        {
+          return true;
+        }
+      })
+
+      if (!this.inIgnoreList(item.node) && !item.state.selected && inList ) {
+        item.setState({ selected: true })
+        this.selectedItems.add(item)
+      }
+    }
+
+    this.setState({ selectionMode: true })
+    this.props.onSelectionFinish([...this.selectedItems])
   }
 
   selectAll = () => {
